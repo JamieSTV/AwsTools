@@ -3,6 +3,7 @@
 function dd(...$vars) {
     foreach ($vars as $var) {
         print_r($var);
+        echo PHP_EOL;
     }
     die();
 }

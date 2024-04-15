@@ -1,67 +1,48 @@
 <?php
+
 require 'Framework/Init.php';
+use Framework\Helpers\DynamoDb\PreferencesHelper;
 
-$dynamoHelper = new DynamoHelper('cognito-prod');
+$preferenceHelper = (new PreferencesHelper('cognito-prod'))
+    ->filter('email_marketing', ['BOOL' => true])
+    ->limit(1500);
 
-$preferenceParams = [
-    'TableName' => 'ProdViewerStore',
-    'IndexName' => 'SK-index',
-    'KeyConditionExpression' => '#sk = :sk',
-    'ExpressionAttributeNames' => [
-        '#sk' => 'SK',
-    ],
-    'FilterExpression' => 'email_marketing = :email_marketing',
-    'ExpressionAttributeValues' => [
-        ':sk' => ['S' => 'PREFERENCE'],
-        ':email_marketing' => ['BOOL' => true],
-    ]
-];
-
-$preferencesRecords = $dynamoHelper->query($preferenceParams);
+$preferencesRecords = $preferenceHelper->query();
 $items = $preferencesRecords['Items'];
-
-$activeSubscribers = 0;
-$count = 0; 
-foreach ($items as $item) {
-    ++$count;
-    try {
-        $profile = $dynamoHelper->getItem($item['PK']['S'], 'PROFILE');
-        if($profile['enabled']['BOOL'] === true){
-            ++$activeSubscribers;
-        }
-    } catch (Exception $e) {
-        // do nothing
-    }
-    show_status($count, count($items));
-}
+$batch = 1;
+$activeSubscribers = countActiveSubscribers($preferenceHelper, $items);
 
 $lastKey = $preferencesRecords['LastEvaluatedKey'];
 while ($lastKey) {
-    $preferenceParams['ExclusiveStartKey'] = $lastKey;
-    $result = $dynamoHelper->query($preferenceParams);
-    $lastKey = $result['LastEvaluatedKey'];
+    $preferenceHelper->ExclusiveStartKey($lastKey);
+    $preferencesRecords = $preferenceHelper->query();
+    $lastKey = $preferencesRecords['LastEvaluatedKey'];
 
+    echo "Batch: $batch - $activeSubscribers Active Subscribers".PHP_EOL;
+    ++$batch;
+    $activeSubscribers += countActiveSubscribers($preferenceHelper, $preferencesRecords['Items']);
+}
+
+function countActiveSubscribers($preferenceHelper, $items){
     $count = 0;
-    $items = $result['Items'];
+    $activeSubscribers = 0;
     foreach ($items as $item) {
         ++$count;
         try {
-            $profile = $dynamoHelper->getItem($item['PK']['S'], 'PROFILE');
+            $profile = $preferenceHelper->getItem($item['PK']['S'], 'PROFILE');
             if($profile['enabled']['BOOL'] === true){
                 ++$activeSubscribers;
             }
         } catch (Exception $e) {
             // do nothing
         }
+        show_status($count, count($items));
     }
 
-    echo "Active Subscribers: $activeSubscribers\n";
-
-    if($count > 100){
-        break;
-    }
+    return $activeSubscribers;
 }
 
+file_put_contents('activeSubscribers.txt', $activeSubscribers);
 echo "Final Total Active Subscribers: $activeSubscribers\n";
 
 
