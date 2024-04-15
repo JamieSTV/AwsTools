@@ -4,13 +4,14 @@ require 'Framework/Init.php';
 use Framework\Helpers\DynamoDb\PreferencesHelper;
 
 // Get the contents of activeSubscribers.json file
-    $activeSubscribers = json_decode(file_get_contents('activeSubscribers.json'), true);
-    if(!$activeSubscribers){
-        $activeSubscribers = [
+    if(!file_exists('activeSubscribers.json')){
+        file_put_contents('activeSubscribers.json', json_encode([
             'count' => 0,
             'lastEvaluatedKey' => null
-        ];
+        ], JSON_PRETTY_PRINT));
     }
+
+    $activeSubscribers = json_decode(file_get_contents('activeSubscribers.json'), true);
 
 // initialize the PreferencesHelper
     $preferenceHelper = (new PreferencesHelper('cognito-prod'))
@@ -28,7 +29,7 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
     $batch = 1;
 
 // If there are more records to query, continue querying
-    while (!empty($activeSubscribers['lastEvaluatedKey'])) {
+    while (!empty($activeSubscribers['lastEvaluatedKey']) && !empty($preferencesRecords['Items'])) {
         $preferenceHelper->ExclusiveStartKey($activeSubscribers['lastEvaluatedKey']);
 
         try{ 
@@ -37,6 +38,13 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
             // query failed, save $activeSubscribers to activeSubscribers.json and exit
             // run again to start from where it left off
             file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            die();
+        }
+
+        if($preferencesRecords['LastEvaluatedKey'] == $activeSubscribers['lastEvaluatedKey']){
+            // something weird going on. Save $activeSubscribers to activeSubscribers.json and exit
+            file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            die();
         }
 
         $activeSubscribers['lastEvaluatedKey'] = $preferencesRecords['LastEvaluatedKey'];
@@ -44,6 +52,7 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
         echo "Batch: $batch - ".$activeSubscribers['count']." Active Subscribers".PHP_EOL;
         ++$batch;
         $activeSubscribers['count'] += countActiveSubscribers($preferenceHelper, $preferencesRecords['Items']);
+        file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
     }
 
 // Save the final count to activeSubscribers.json
