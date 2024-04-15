@@ -16,18 +16,41 @@ class DynamoHelper{
         $this->client = $this->getDynamoDbClient($profile);
     }
 
+    /**
+     * Set Table Name
+     * sets the table name
+     * 
+     * @param string $tableName
+     * 
+     * @return self
+     */
     public function setTableName(string $tableName){
         $this->tableName = $tableName;
         $this->params = array_merge($this->params, ['TableName' => $tableName]);
         return $this;
     }
 
+    /**
+     * Get Profile
+     * fetches the profile from the aws config file
+     * 
+     * @param string $profile
+     * @return array
+     */
     private function getProfile(string $profile):array
     {
         $config = parse_ini_file(getenv('HOME') . '/.aws/config', true);
         return $config['profile '.$profile] ?? [];
     }
 
+    /**
+     * Get DynamoDb Client
+     * asks for MFA token, then assumes to role of the provided profile
+     * before initializing the DynamoDb client
+     * 
+     * @param string $profile
+     * @return DynamoDbClient
+     */
     public function getDynamoDbClient(string $profile){
         if($this->client){
             return $this->client;
@@ -66,6 +89,14 @@ class DynamoHelper{
         }
     }
 
+    /**
+     * Get Item
+     * fetch any row by its PK/SK combination. 
+     * 
+     * @param string $PK
+     * @param string $SK
+     * @return array
+     */
     public function getItem(string $PK, string $SK){
         $result = $this->client->getItem([
             'TableName' => $this->tableName,
@@ -78,15 +109,38 @@ class DynamoHelper{
         return $result['Item'];
     }
 
+    /**
+     * Query
+     * fetch multiple rows based on the provided parameters
+     * 
+     * @param array $params
+     * @return array
+     */
     public function query(array $params = null){
         return $this->client->query($params ?? $this->params);
     }
     
+    /**
+     * Limit
+     * sets the limit param
+     * 
+     * @param int $limit
+     *
+     * @return self
+     */
     public function limit($limit){
         $this->params['Limit'] = $limit;
         return $this;
     }
 
+    /**
+     * Filter
+     * sets the filter expression
+     * @param string $filterName
+     * @param array $filter
+     * 
+     * @return self
+     */
     public function filter(string $filterName, array $filter){
         $this->params['FilterExpression'] = "$filterName = :$filterName";
         $this->params['ExpressionAttributeValues'][":$filterName"] = $filter;
@@ -94,6 +148,14 @@ class DynamoHelper{
         return $this;
     }
 
+    /**
+     * ExpressionAttributes
+     * sets the expression attributes
+     * 
+     * @param array $attributes
+     * 
+     * @return self
+     */
     public function expressionAttributes($attributes){
         foreach($attributes as $attributeName => $value){
             $this->params['ExpressionAttributeNames']["#".strtolower($attributeName)] = $attributeName;
@@ -103,16 +165,40 @@ class DynamoHelper{
         return $this;
     }
     
+    /**
+     * ExclusiveStartKey
+     * sets the last evaluated key
+     * 
+     * @param array $lastKey
+     * 
+     * @return self
+     */
     public function ExclusiveStartKey($lastKey){
         $this->params['ExclusiveStartKey'] = $lastKey;
         return $this;
     }
 
+    /**
+     * Index
+     * sets the index name
+     * 
+     * @param string $indexName
+     * 
+     * @return self
+     */
     public function index($indexName){
         $this->params = array_merge($this->params, ['IndexName' => $indexName]);
         return $this;
     }
 
+    /**
+     * KeyConditionExpression
+     * sets the key condition expression
+     * 
+     * @param array $expressions
+     * 
+     * @return self
+     */
     public function keyConditionExpression($expressions){
         $parts = [];
         foreach($expressions as $expression){
