@@ -16,7 +16,7 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
 // initialize the PreferencesHelper
     $preferenceHelper = (new PreferencesHelper('cognito-prod'))
         ->filter('email_marketing', ['BOOL' => true])
-        ->limit(1500);
+        ->limit(2000);
 
 // If this is the first time running the script, query the first 1500 records
     if(empty($activeSubscribers['lastEvaluatedKey'])){
@@ -29,22 +29,28 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
     $batch = 1;
 
 // If there are more records to query, continue querying
-    while (!empty($activeSubscribers['lastEvaluatedKey']) && !empty($preferencesRecords['Items'])) {
+    while (!empty($activeSubscribers['lastEvaluatedKey'])) {
         $preferenceHelper->ExclusiveStartKey($activeSubscribers['lastEvaluatedKey']);
 
         try{ 
             $preferencesRecords = $preferenceHelper->query();
         } catch(\Exception $e){
             // query failed, save $activeSubscribers to activeSubscribers.json and exit
-            // run again to start from where it left off
             file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
-            die();
+            die('Query failed. Run again to start from where it left off.');
+        }
+
+        if(empty($preferencesRecords['Items'])){
+            // no more items to process. Save $activeSubscribers to activeSubscribers.json and break
+            file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            echo 'No more items to process.'.PHP_EOL;
+            break;
         }
 
         if($preferencesRecords['LastEvaluatedKey'] == $activeSubscribers['lastEvaluatedKey']){
             // something weird going on. Save $activeSubscribers to activeSubscribers.json and exit
             file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
-            die();
+            die('LastEvaluatedKey is the same as the previous one. Something is wrong.');
         }
 
         $activeSubscribers['lastEvaluatedKey'] = $preferencesRecords['LastEvaluatedKey'];
