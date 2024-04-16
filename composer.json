@@ -4,7 +4,9 @@
         },
         "autoload": {
             "psr-4": {
-                "Framework\\Helpers\\DynamoDb\\": "Framework/Helpers/DynamoDb/"
+                "App\\Helpers\\DynamoDb\\": "App/Helpers/DynamoDb/",
+                "App\\Commands\\": "App/Commands/",
+                "App\\Config\\": "Framework/Config/"
             }
         }
     }

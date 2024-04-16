@@ -1,18 +1,20 @@
 <?php
 
-require 'Framework/Init.php';
+require 'App/Init.php';
 use Framework\Helpers\DynamoDb\Preference;
 
+$file = $storeageRoot.'/Storage/activeSubscribers.json';
+
 // Get the contents of activeSubscribers.json file
-    if(!file_exists('activeSubscribers.json')){
-        file_put_contents('activeSubscribers.json', json_encode([
+    if(!file_exists($file)){
+        file_put_contents($file, json_encode([
             'count' => 0,
             'lastEvaluatedKey' => null
         ], JSON_PRETTY_PRINT));
     }
 
-    $activeSubscribers = json_decode(file_get_contents('activeSubscribers.json'), true);
-
+    $activeSubscribers = json_decode(file_get_contents($file), true);
+    
 // initialize the PreferencesHelper
     $preferenceHelper = (new Preference('cognito-prod'))
         ->filter('email_marketing', ['BOOL' => true])
@@ -36,20 +38,20 @@ use Framework\Helpers\DynamoDb\Preference;
             $preferencesRecords = $preferenceHelper->query();
         } catch(\Exception $e){
             // query failed, save $activeSubscribers to activeSubscribers.json and exit
-            file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            file_put_contents($file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
             die('Query failed. Run again to start from where it left off.');
         }
 
         if(empty($preferencesRecords['Items'])){
             // no more items to process. Save $activeSubscribers to activeSubscribers.json and break
-            file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            file_put_contents($file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
             echo 'No more items to process.'.PHP_EOL;
             break;
         }
 
         if($preferencesRecords['LastEvaluatedKey'] == $activeSubscribers['lastEvaluatedKey']){
             // something weird going on. Save $activeSubscribers to activeSubscribers.json and exit
-            file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+            file_put_contents($file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
             die('LastEvaluatedKey is the same as the previous one. Something is wrong.');
         }
 
@@ -58,11 +60,11 @@ use Framework\Helpers\DynamoDb\Preference;
         echo "Batch: $batch - ".$activeSubscribers['count']." Active Subscribers".PHP_EOL;
         ++$batch;
         $activeSubscribers['count'] += countActiveSubscribers($preferenceHelper, $preferencesRecords['Items']);
-        file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+        file_put_contents($file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
     }
 
 // Save the final count to activeSubscribers.json
-    file_put_contents('activeSubscribers.json', json_encode($activeSubscribers, JSON_PRETTY_PRINT));
+    file_put_contents($file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
     echo "Final Total Active Subscribers: ".$activeSubscribers['count']."\n";
 
 // Function fetches the profile for the user and increments the activeSubscribers count if the user is enabled
@@ -79,7 +81,7 @@ use Framework\Helpers\DynamoDb\Preference;
             } catch (Exception $e) {
                 // do nothing
             }
-            show_status($count, count($items));
+            showProgress($count, count($items));
         }
 
         return $activeSubscribers;  

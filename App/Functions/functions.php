@@ -1,5 +1,11 @@
 <?php
 
+
+/**
+ * Dump and die
+ * 
+ * @param mixed ...$vars
+ */
 function dd(...$vars) {
     foreach ($vars as $var) {
         print_r($var);
@@ -8,7 +14,14 @@ function dd(...$vars) {
     die();
 }
 
-function show_status($done, $total, $size=30) {
+/**
+ * Show a progress bar
+ * 
+ * @param int $done how many items are completed
+ * @param int $total how many items are to be completed
+ * @param int $size of the status bar
+ */
+function showProgress(int $done, int $total, int $size=40) {
 
     static $start_time;
 

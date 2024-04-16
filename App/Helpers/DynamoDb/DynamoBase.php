@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Helpers\DynamoDb;
+namespace App\Helpers\DynamoDb;
 
 use Aws\Sts\StsClient;
 use Aws\Exception\AwsException;
@@ -156,7 +156,7 @@ class DynamoBase{
      * 
      * @return self
      */
-    public function expressionAttributes($attributes){
+    public function expressionAttributes(array $attributes){
         foreach($attributes as $attributeName => $value){
             $this->params['ExpressionAttributeNames']["#".strtolower($attributeName)] = $attributeName;
             $this->params['ExpressionAttributeValues'][":".strtolower($attributeName)] = $value;
@@ -173,7 +173,7 @@ class DynamoBase{
      * 
      * @return self
      */
-    public function ExclusiveStartKey($lastKey){
+    public function ExclusiveStartKey(array $lastKey){
         $this->params['ExclusiveStartKey'] = $lastKey;
         return $this;
     }

@@ -1,13 +1,13 @@
 <?php
 
-namespace Framework\Helpers\DynamoDb;
+namespace App\Helpers\DynamoDb;
 
-use Framework\Helpers\DynamoDb\DynamoBase;
+use App\Helpers\DynamoDb\DynamoBase;
 
-class Profile extends DynamoBase
+class Preference extends DynamoBase
 {
     private $tableName = 'ProdViewerStore';
-    private $SK = 'PROFILE';
+    private $SK = 'PREFERENCE';
 
     public function __construct(string $profile)
     {
