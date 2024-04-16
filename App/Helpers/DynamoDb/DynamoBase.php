@@ -9,6 +9,8 @@ use Aws\DynamoDb\DynamoDbClient;
 class DynamoBase{
     private $client;
     private $tableName;
+    
+    protected $SK = null;
 
     private $params = [];
 
@@ -97,12 +99,12 @@ class DynamoBase{
      * @param string $SK
      * @return array
      */
-    public function getItem(string $PK, string $SK){
+    public function getItem(string $PK, string $SK = null){
         $result = $this->client->getItem([
             'TableName' => $this->tableName,
             'Key' => [
                 'PK' => ['S' => $PK],
-                'SK' => ['S' => $SK]
+                'SK' => ['S' => $SK ?? $this->SK]
             ]
         ]);
 
@@ -207,5 +209,9 @@ class DynamoBase{
 
         $this->params['KeyConditionExpression'] = implode(' AND ', $parts);
         return $this;
+    }
+
+    public function getParams(){
+        return $this->params;
     }
 }

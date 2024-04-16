@@ -11,5 +11,30 @@ if(!isset($commands[$command])){
 }
 
 $command = $commands[$command];
+
+if(!empty($command['args'])){
+    $argsRaw = $argv;
+    array_shift($argsRaw);
+    array_shift($argsRaw);
+    $count = 0;
+    foreach($command['args'] as $arg => $type){
+        if(!isset($argsRaw[$count])){
+            die('Argument '.$arg.' is required'.PHP_EOL);
+        }
+
+        $args[$arg] = $argsRaw[$count];
+        $count++;
+    }
+}
+
 $class = new $command['class']($command);
-$class->{$command['method']}();
+
+if(!method_exists($class, $command['method'])){
+    die('Method not found'.PHP_EOL);
+}
+
+if(!empty($command['args'])){
+    $class->{$command['method']}($args);
+} else {
+    $class->{$command['method']}();
+}

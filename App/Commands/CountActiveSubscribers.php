@@ -7,8 +7,8 @@ use App\Commands\BaseCommand;
 class CountActiveSubscribers extends BaseCommand{
     private $file;
 
-    public function __construct($profile){
-        parent::__construct($profile);
+    public function __construct($config){
+        parent::__construct($config);
         $this->file = $this->config['file'];
     }
 
