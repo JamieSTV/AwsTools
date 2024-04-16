@@ -6,7 +6,7 @@ use Aws\Sts\StsClient;
 use Aws\Exception\AwsException;
 use Aws\DynamoDb\DynamoDbClient;
 
-class DynamoHelper{
+class DynamoBase{
     private $client;
     private $tableName;
 

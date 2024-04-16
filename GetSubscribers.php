@@ -1,7 +1,7 @@
 <?php
 
 require 'Framework/Init.php';
-use Framework\Helpers\DynamoDb\PreferencesHelper;
+use Framework\Helpers\DynamoDb\Preference;
 
 // Get the contents of activeSubscribers.json file
     if(!file_exists('activeSubscribers.json')){
@@ -14,7 +14,7 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
     $activeSubscribers = json_decode(file_get_contents('activeSubscribers.json'), true);
 
 // initialize the PreferencesHelper
-    $preferenceHelper = (new PreferencesHelper('cognito-prod'))
+    $preferenceHelper = (new Preference('cognito-prod'))
         ->filter('email_marketing', ['BOOL' => true])
         ->limit(2000);
 
@@ -82,8 +82,8 @@ use Framework\Helpers\DynamoDb\PreferencesHelper;
             show_status($count, count($items));
         }
 
-        return $activeSubscribers;
-}
+        return $activeSubscribers;  
+    }
 
 
 

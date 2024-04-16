@@ -2,12 +2,12 @@
 
 namespace Framework\Helpers\DynamoDb;
 
-use Framework\Helpers\DynamoDb\DynamoHelper;
+use Framework\Helpers\DynamoDb\DynamoBase;
 
-class PreferencesHelper extends DynamoHelper
+class Profile extends DynamoBase
 {
     private $tableName = 'ProdViewerStore';
-    private $SK = 'PREFERENCE';
+    private $SK = 'PROFILE';
 
     public function __construct(string $profile)
     {
