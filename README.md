@@ -2,7 +2,7 @@
 
 Ensure your aws Config/Credentials files are set up correctly.
 
-the installation folder, you can run:
+From the installation folder, you can run:
 
     ./php runCommand.php [commandName]  [args...]
 

@@ -71,8 +71,6 @@ class CountActiveSubscribers extends BaseCommand{
             file_put_contents($this->file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
         }
 
-        // Save the final count to activeSubscribers.json
-        file_put_contents($this->file, json_encode($activeSubscribers, JSON_PRETTY_PRINT));
         echo "Final Total Active Subscribers: ".$activeSubscribers['count']."\n";
     }
 
