@@ -1,8 +1,10 @@
-USAGE
+### USAGE
 Ensure your aws Config/Credentials files are set up correctly. 
 
-the installation folder, you can run: 
+the installation folder, you can run:
+
   ./php runCommand [commandName] [args...]
+
 to run a command
 
 to create a new command add a command file to app/commands/ and extend the base command. 
