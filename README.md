@@ -4,11 +4,12 @@ Ensure your aws Config/Credentials files are set up correctly.
 
 the installation folder, you can run:
 
-    ./php runCommand [commandName]  [args...]
+    ./php runCommand.php [commandName]  [args...]
 
 to run a command
 
 **Create New Commands**
+
 to create a new command add a command file to app/commands/ and extend the base command.
 
 then create a entry in app/config/commands.php to register your command.
@@ -40,6 +41,7 @@ can fetch single rows by it's PK:
     	->getItem($PK);
 
 **TODO**
+
 extend getItem() to allow  combining multiple rows with the same PK eg
 
     $PK = 'VIEWER#'.strtoupper($args['cognitoId']);
