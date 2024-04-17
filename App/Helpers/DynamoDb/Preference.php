@@ -7,7 +7,7 @@ use App\Helpers\DynamoDb\DynamoBase;
 class Preference extends DynamoBase
 {
     private $tableName = 'ProdViewerStore';
-    private $SK = 'PREFERENCE';
+    protected $SK = 'PREFERENCE';
 
     public function __construct(string $profile)
     {

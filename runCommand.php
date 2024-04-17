@@ -12,6 +12,11 @@ if(!isset($commands[$command])){
 
 $command = $commands[$command];
 
+$class = new $command['class']($command);
+if(!method_exists($class, $command['method'])){
+    die('Method not found'.PHP_EOL);
+}
+
 if(!empty($command['args'])){
     $argsRaw = $argv;
     array_shift($argsRaw);
@@ -25,15 +30,7 @@ if(!empty($command['args'])){
         $args[$arg] = $argsRaw[$count];
         $count++;
     }
-}
 
-$class = new $command['class']($command);
-
-if(!method_exists($class, $command['method'])){
-    die('Method not found'.PHP_EOL);
-}
-
-if(!empty($command['args'])){
     $class->{$command['method']}($args);
 } else {
     $class->{$command['method']}();

@@ -9,7 +9,7 @@ $commands = [
         'file' => __DIR__.'/../../Storage/activeSubscribers.json'
     ],    
     'getUser' => [
-        'description' => 'Get a user by congito id',
+        'description' => 'Get a user by cognito id',
         'class' => 'App\Commands\GetUser',
         'method' => 'run',
         'profile' => 'cognito-prod',
